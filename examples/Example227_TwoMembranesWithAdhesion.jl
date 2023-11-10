@@ -145,10 +145,11 @@ function main(;
 	FESs = [FES1, FES1]
 	sol = FEVector(FESs; tags = [u1,u2])
 
-	interpolate!(sol[u2], (result,qp) -> ( result[1] = boundary_offset ) )
+	interpolate!(sol[u1], (result,qp) -> ( result[1] =  qp.x[1]*(1-qp.x[1])+qp.x[2]*(1-qp.x[2])   ) )
+	interpolate!(sol[u2], (result,qp) -> ( result[1] = boundary_offset - ( qp.x[1]*(1-qp.x[1])+qp.x[2]*(1-qp.x[2])  ) ) )
 
 	## solve
-	sol = solve(PD, FESs; init = sol, maxiterations=100, target_residual=1e-8, kwargs...)
+	sol = solve(PD, FESs; init = sol, maxiterations=200, target_residual=1e-8, kwargs...)
 
 	u_min = minimum(sol.entries)
 	u_max = maximum(sol.entries)
@@ -181,4 +182,6 @@ end # module
 
 using GLMakie
 
-@time Example227_TwoMembranesWithAdhesion.main(Plotter=GLMakie, γ=1e8, θ=10, ϵ=1, N=30, f1 = 15, f2 = -15)
+force_density = 0
+
+@time Example227_TwoMembranesWithAdhesion.main(Plotter=GLMakie, γ=1e8, θ=10, ϵ=1e-2, N=50, f1 = force_density, f2 = -force_density)
