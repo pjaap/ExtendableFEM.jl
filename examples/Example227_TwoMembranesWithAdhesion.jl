@@ -149,7 +149,7 @@ function main(;
 	interpolate!(sol[u2], (result,qp) -> ( result[1] = boundary_offset - ( qp.x[1]*(1-qp.x[1])+qp.x[2]*(1-qp.x[2])  ) ) )
 
 	## solve
-	sol = solve(PD, FESs; init = sol, maxiterations=200, target_residual=1e-8, kwargs...)
+	sol = solve(PD, FESs; init = sol, maxiterations=999, target_residual=1e-8, kwargs...)
 
 	u_min = minimum(sol.entries)
 	u_max = maximum(sol.entries)
@@ -157,8 +157,8 @@ function main(;
 	
     ## plot
     pl = GridVisualizer(; Plotter = Plotter, layout = (1,2), clear = true, size = (1000,500))
-    scalarplot!(pl[1,1],xgrid, view(nodevalues(sol[u1]),1,:), title = "u1", flimits = (u_min, u_max) )
-    scalarplot!(pl[1,2],xgrid, view(nodevalues(sol[u2]),1,:), title = "u2", flimits = (u_min, u_max) )
+    scalarplot!(pl[1,1],xgrid, view(nodevalues(sol[u1]),1,:), title = "lower membrane u1", flimits = (u_min, u_max) )
+    scalarplot!(pl[1,2],xgrid, view(nodevalues(sol[u2]),1,:), title = "upper membrane u2", flimits = (u_min, u_max) )
 
 	# compute portion of contact
 	dofs_in_contact = 0
@@ -182,6 +182,6 @@ end # module
 
 using GLMakie
 
-force_density = 0
+force_density = -4
 
-@time Example227_TwoMembranesWithAdhesion.main(Plotter=GLMakie, γ=1e8, θ=10, ϵ=1e-2, N=50, f1 = force_density, f2 = -force_density)
+@time Example227_TwoMembranesWithAdhesion.main(Plotter=GLMakie, γ=1e8, θ=10, ϵ=1e-1, N=50, f1 = force_density, f2 = -force_density)
