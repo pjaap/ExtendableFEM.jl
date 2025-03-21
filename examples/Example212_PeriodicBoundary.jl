@@ -111,7 +111,7 @@ function create_grid(; h, height, width)
     regionpoint!(builder, width / 3, height / 2)
 
     cellregion!(builder, 2)
-    maxvolume!(builder, 0.5 * h)
+    maxvolume!(builder, h / 2)
     regionpoint!(builder, 2width / 3, height / 2)
 
     return simplexgrid(builder)
@@ -183,7 +183,11 @@ function main(;
         assign_operator!(PD, CombineDofs(u, u, coupling_matrix; kwargs...))
     end
 
-    sol = solve(PD, FES)
+    sol, SC = solve(PD, FES; return_config = true)
+
+    display(SC.A.entries)
+    display(SC.b.entries)
+
 
     plt = GridVisualizer(; layout = (1, 2), Plotter, size = (1300, 800))
     gridplot!(plt[1, 1], xgrid, linewidth = 1, title = "mesh", scene3d = :LScene)

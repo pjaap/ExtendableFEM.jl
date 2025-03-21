@@ -234,8 +234,8 @@ Note that A is transposed for efficient col-wise storage.
 function get_periodic_coupling_matrix(
         FES::FESpace{Tv},
         xgrid::ExtendableGrid{TvG, TiG},
-        b_from,
-        b_to,
+        b_from, # these dofs will be replaced
+        b_to,   # by those
         give_opposite!::Function;
         mask = :auto,
         sparsity_tol = 1.0e-12
@@ -349,6 +349,8 @@ function get_periodic_coupling_matrix(
         end
     end
 
+    @show face_numbers_of_bfaces n_boundary_faces search_areas faces_in_b_from faces_in_b_to
+
     # loop over boundary face indices: we need this index for dofs_on_boundary
     for i_boundary_face in 1:n_boundary_faces
 
@@ -356,6 +358,7 @@ function get_periodic_coupling_matrix(
         if boundary_regions[i_boundary_face] == b_from
 
             local_dofs = @views dofs_on_boundary[:, i_boundary_face]
+
             for local_dof in local_dofs
                 # compute number of component
                 if mask[1 + ((local_dof - 1) ÷ coffset)] == 0.0
@@ -372,11 +375,14 @@ function get_periodic_coupling_matrix(
                 interpolate!(
                     fe_vector_target[1],
                     ON_FACES, eval_point,
-                    items = search_areas[face_numbers_of_bfaces[i_boundary_face]],
+                    items = search_areas[face_numbers_of_bfaces[i_boundary_face]]
                 )
 
                 # deactivate entry
                 fe_vector.entries[local_dof] = 0.0
+
+                # # normalize the vector, s.t., the sum is one
+                # fe_vector_target.entries ./= sum(fe_vector_target.entries)
 
                 # set entries
                 for (i, target_entry) in enumerate(fe_vector_target.entries)
